@@ -47,6 +47,27 @@ namespace Sounds {
         case Gdk.Key.Right:
           stdout.printf("right pressed\n");
           break;
+        case Gdk.Key.w:
+          stdout.printf("w pressed\n");
+          break;
+        case Gdk.Key.a:
+          stdout.printf("a pressed\n");
+          break;
+        case Gdk.Key.s:
+          stdout.printf("s pressed\n");
+          break;
+        case Gdk.Key.d:
+          stdout.printf("d pressed\n");
+          break;
+        case Gdk.Key.f:
+          stdout.printf("f pressed\n");
+          break;
+        case Gdk.Key.g:
+          stdout.printf("g pressed\n");
+          break;
+        case Gdk.Key.space:
+          stdout.printf("space pressed\n");
+          break;
         default:
           stdout.printf("different key pressed\n");
           break;
@@ -70,6 +91,27 @@ namespace Sounds {
         break;
       case Gdk.Key.Right:
         stdout.printf("right released\n");
+        break;
+      case Gdk.Key.w:
+        stdout.printf("w released\n");
+        break;
+      case Gdk.Key.a:
+        stdout.printf("a released\n");
+        break;
+      case Gdk.Key.s:
+        stdout.printf("s released\n");
+        break;
+      case Gdk.Key.d:
+        stdout.printf("d released\n");
+        break;
+      case Gdk.Key.f:
+        stdout.printf("f released\n");
+        break;
+      case Gdk.Key.g:
+        stdout.printf("g released\n");
+        break;
+      case Gdk.Key.space:
+        stdout.printf("space released\n");
         break;
       default:
         stdout.printf("different key released\n");
