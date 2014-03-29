@@ -7,11 +7,13 @@ namespace Sounds {
   class Window : Gtk.Window {
     private HashMap<uint, bool> pressed;
     private HashMap<int, string> filenames;
+    private HashMap<int, Element> pipelines;
   
     public Window () {
       int i;
       pressed = new HashMap<uint, bool>();
       filenames = new HashMap<int, string>();
+      pipelines = new HashMap<int, Element>();
       
       var hbox = new Box(Gtk.Orientation.HORIZONTAL, 0);
       var filter = new FileFilter();
@@ -161,21 +163,21 @@ namespace Sounds {
       int key = -1;
       b.get_title().scanf("Choose a file for key %d", ref key);
       if (key != -1) {
-        filenames[key] = b.get_filename();
+        filenames[key] = b.get_uri();
+        pipelines[key] = ElementFactory.make("playbin2", "playbin");
+        var sink = ElementFactory.make("alsasink", "sink");
+        pipelines[key].set("uri", filenames[key]);
+        pipelines[key].set("audio-sink", sink);
       }
     }
     
     private void key_pressed(int key) {
       if (filenames.has_key(key)) {
-        string filename = filenames[key];
-        var pipeline = new Pipeline("key " + "%d".printf(key));
-        var src = ElementFactory.make("filesrc", "src");  
-        var bin = ElementFactory.make("decodebin2", "decode");
-        var conv = ElementFactory.make("audioconvert", "convert");
-        var sink = ElementFactory.make("autoaudiosink", "sink");
-        pipeline.add_many(src, bin, conv, sink);
-        src.set("location", filename);
-        pipeline.set_state(State.PLAYING);
+        stdout.printf("key pressed: %i, playing uri: %s\n", key, filenames[key]);
+        var p = pipelines[key];
+        p.set_state(State.PAUSED);
+        p.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 0);
+        p.set_state(State.PLAYING);
       } else {
         stdout.printf("key pressed: %i, no audio selected\n", key);
       }
