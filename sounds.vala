@@ -160,14 +160,25 @@ namespace Sounds {
     private void on_file_chosen(FileChooserButton b) {
       int key = -1;
       b.get_title().scanf("Choose a file for key %d", ref key);
-      stdout.printf("key: %d file: ".printf(key) +
-        b.get_filename() + "\n");
+      if (key != -1) {
+        filenames[key] = b.get_filename();
+      }
     }
     
     private void key_pressed(int key) {
-      //string filename = filenames[key];
-      //var pipeline = new Pipeline("key " + "%d".printf(key));
-      stdout.printf("key %d pressed\n", key);
+      if (filenames.has_key(key)) {
+        string filename = filenames[key];
+        var pipeline = new Pipeline("key " + "%d".printf(key));
+        var src = ElementFactory.make("filesrc", "src");  
+        var bin = ElementFactory.make("decodebin2", "decode");
+        var conv = ElementFactory.make("audioconvert", "convert");
+        var sink = ElementFactory.make("autoaudiosink", "sink");
+        pipeline.add_many(src, bin, conv, sink);
+        src.set("location", filename);
+        pipeline.set_state(State.PLAYING);
+      } else {
+        stdout.printf("key pressed: %i, no audio selected\n", key);
+      }
     }
     
     private void key_released(int key) {
