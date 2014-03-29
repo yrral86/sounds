@@ -1,14 +1,32 @@
 using Gtk;
 using Gdk;
+using Gst;
 using Gee;
 
 namespace Sounds {
   class Window : Gtk.Window {
     private HashMap<uint, bool> pressed;
+    private HashMap<int, string> filenames;
   
     public Window () {
+      int i;
       pressed = new HashMap<uint, bool>();
-    
+      filenames = new HashMap<int, string>();
+      
+      var hbox = new Box(Gtk.Orientation.HORIZONTAL, 0);
+      var filter = new FileFilter();
+      filter.add_mime_type("audio/mp3");
+      for (i = 0; i < 13; i++) {
+        var chooser = new FileChooserButton("Choose a file for key " + "%d".printf(i), FileChooserAction.OPEN);
+        chooser.set_filter(filter);
+        hbox.pack_start(chooser, false, false, 6);
+        chooser.file_set.connect(on_file_chosen);
+      }
+      
+      hbox.set_margin_top(900);
+      this.add(hbox);
+      
+      this.window_position = WindowPosition.CENTER;
       this.set_default_size(1000, 1000);
 
       this.add_events(Gdk.EventMask.BUTTON_RELEASE_MASK);
@@ -19,15 +37,33 @@ namespace Sounds {
     }
     
     private bool on_button_press(Gdk.EventButton event) {
-      stdout.printf("button %u pressed\n", event.button);
-      
+      switch(event.button) {
+      case 1:
+        key_pressed(11);
+        break;
+      case 3:
+        key_pressed(12);
+        break;
+      default:
+        stdout.printf("invalid button pressed\n");
+        break;
+      }
       return true;
     }
   
   
     private bool on_button_release(Gdk.EventButton event) {
-      stdout.printf("button %u released\n", event.button);
-      
+      switch(event.button) {
+      case 1:
+        key_released(11);
+        break;
+      case 3:
+        key_released(12);
+        break;
+      default:
+        stdout.printf("invalid button released\n");
+        break;
+      }
       return true;
     }
     
@@ -36,40 +72,40 @@ namespace Sounds {
         pressed[event.keyval] = true;
         switch (event.keyval) {
         case Gdk.Key.Up:
-          stdout.printf("up pressed\n");
+          key_pressed(0);
           break;
         case Gdk.Key.Down:
-          stdout.printf("down pressed\n");
+          key_pressed(1);
           break;
         case Gdk.Key.Left:
-          stdout.printf("left pressed\n");
+          key_pressed(2);
           break;
         case Gdk.Key.Right:
-          stdout.printf("right pressed\n");
+          key_pressed(3);
           break;
         case Gdk.Key.w:
-          stdout.printf("w pressed\n");
+          key_pressed(4);
           break;
         case Gdk.Key.a:
-          stdout.printf("a pressed\n");
+          key_pressed(5);
           break;
         case Gdk.Key.s:
-          stdout.printf("s pressed\n");
+          key_pressed(6);
           break;
         case Gdk.Key.d:
-          stdout.printf("d pressed\n");
+          key_pressed(7);
           break;
         case Gdk.Key.f:
-          stdout.printf("f pressed\n");
+          key_pressed(8);
           break;
         case Gdk.Key.g:
-          stdout.printf("g pressed\n");
+          key_pressed(9);
           break;
         case Gdk.Key.space:
-          stdout.printf("space pressed\n");
+          key_pressed(10);
           break;
         default:
-          stdout.printf("different key pressed\n");
+          stdout.printf("invalid key pressed\n");
           break;
         }
       }
@@ -81,37 +117,37 @@ namespace Sounds {
       pressed[event.keyval] = false;
       switch (event.keyval) {
       case Gdk.Key.Up:
-        stdout.printf("up released\n");
+        key_released(0);
         break;
       case Gdk.Key.Down:
-        stdout.printf("down released\n");
+        key_released(1);
         break;
       case Gdk.Key.Left:
-        stdout.printf("left released\n");
+        key_released(2);
         break;
       case Gdk.Key.Right:
-        stdout.printf("right released\n");
+        key_released(3);
         break;
       case Gdk.Key.w:
-        stdout.printf("w released\n");
+        key_released(4);
         break;
       case Gdk.Key.a:
-        stdout.printf("a released\n");
+        key_released(5);
         break;
       case Gdk.Key.s:
-        stdout.printf("s released\n");
+        key_released(6);
         break;
       case Gdk.Key.d:
-        stdout.printf("d released\n");
+        key_released(7);
         break;
       case Gdk.Key.f:
-        stdout.printf("f released\n");
+        key_released(8);
         break;
       case Gdk.Key.g:
-        stdout.printf("g released\n");
+        key_released(9);
         break;
       case Gdk.Key.space:
-        stdout.printf("space released\n");
+        key_released(10);
         break;
       default:
         stdout.printf("different key released\n");
@@ -120,9 +156,27 @@ namespace Sounds {
       
       return true;
     }
+    
+    private void on_file_chosen(FileChooserButton b) {
+      int key = -1;
+      b.get_title().scanf("Choose a file for key %d", ref key);
+      stdout.printf("key: %d file: ".printf(key) +
+        b.get_filename() + "\n");
+    }
+    
+    private void key_pressed(int key) {
+      //string filename = filenames[key];
+      //var pipeline = new Pipeline("key " + "%d".printf(key));
+      stdout.printf("key %d pressed\n", key);
+    }
+    
+    private void key_released(int key) {
+      stdout.printf("key %d released\n", key);
+    }
 
     public static int main (string[] args) {
       Gtk.init(ref args);
+      Gst.init(ref args);
 
       var app = new Window();
       app.show_all();
