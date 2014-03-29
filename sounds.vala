@@ -165,9 +165,7 @@ namespace Sounds {
       if (key != -1) {
         filenames[key] = b.get_uri();
         pipelines[key] = ElementFactory.make("playbin2", "playbin");
-        var sink = ElementFactory.make("alsasink", "sink");
         pipelines[key].set("uri", filenames[key]);
-        pipelines[key].set("audio-sink", sink);
       }
     }
     
