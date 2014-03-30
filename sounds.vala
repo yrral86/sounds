@@ -15,18 +15,30 @@ namespace Sounds {
       filenames = new HashMap<int, string>();
       pipelines = new HashMap<int, Element>();
       
-      var hbox = new Box(Gtk.Orientation.HORIZONTAL, 0);
+      var vbox = new Box(Gtk.Orientation.VERTICAL, 0);
+      var hbox1 = new Box(Gtk.Orientation.HORIZONTAL, 0);
+      
+      var save_b = new Button.with_label("Save");
+      var open_b = new FileChooserButton("Open", FileChooserAction.OPEN);
+      open_b.file_set.connect(on_file_open);
+      save_b.clicked.connect(on_save_button);
+      hbox1.pack_start(save_b, false, false, 6);
+      hbox1.pack_start(open_b, false, false, 6);
+      
+      var hbox2 = new Box(Gtk.Orientation.HORIZONTAL, 0);
       var filter = new FileFilter();
       filter.add_mime_type("audio/mp3");
       for (i = 0; i < 13; i++) {
         var chooser = new FileChooserButton("Choose a file for key " + "%d".printf(i), FileChooserAction.OPEN);
         chooser.set_filter(filter);
-        hbox.pack_start(chooser, false, false, 6);
+        hbox2.pack_start(chooser, false, false, 6);
         chooser.file_set.connect(on_file_chosen);
       }
       
-      hbox.set_margin_top(900);
-      this.add(hbox);
+      hbox2.set_margin_top(800);
+      vbox.pack_start(hbox1, false, false, 0);
+      vbox.pack_start(hbox2, false, false, 0);
+      this.add(vbox);
       
       this.window_position = WindowPosition.CENTER;
       this.set_default_size(1000, 1000);
@@ -167,6 +179,49 @@ namespace Sounds {
         pipelines[key] = ElementFactory.make("playbin2", "playbin");
         pipelines[key].set("uri", filenames[key]);
       }
+    }
+    
+    private void on_file_open(FileChooserButton b) {
+      int i;
+      string filename = b.get_filename();
+      string contents;
+      try {
+        FileUtils.get_contents(filename, out contents);
+      } catch (FileError e) {
+        stderr.printf("%s\n", e.message);
+        contents = ",,,,,,,,,,,,";
+      }
+      var new_filenames = contents.split(",");
+      for (i = 0; i < new_filenames.length; i++) {
+        filenames[i] = new_filenames[i];
+        pipelines[i] = ElementFactory.make("playbin2", "playbin");
+        pipelines[i].set("uri", filenames[i]);
+      }
+    }
+    
+    private void on_save_button(Button b) {
+      int i;
+      FileChooserDialog d = new FileChooserDialog("Save setup",
+                                                  this, FileChooserAction.SAVE,
+                                                  "_Cancel", ResponseType.CANCEL,
+                                                  "_Save", ResponseType.ACCEPT);
+      d.select_multiple = false;
+      
+      if (d.run() == ResponseType.ACCEPT) {
+        string filename = d.get_filename();
+        string contents = "";
+        for (i = 0; i < 12; i++)
+          contents += filenames[i] + ",";
+        contents += filenames[12];
+        try {
+          FileUtils.set_contents(filename, contents);
+          stdout.printf("saving to %s\n", filename);
+        } catch (FileError e) {
+          stderr.printf("%s\n", e.message);
+        }
+      }
+
+      d.close();
     }
     
     private void key_pressed(int key) {
